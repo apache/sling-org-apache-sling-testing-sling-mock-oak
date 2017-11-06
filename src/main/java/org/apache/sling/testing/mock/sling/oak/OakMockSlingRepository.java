@@ -33,19 +33,21 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = SlingRepository.class)
+@Component
+@Service(SlingRepository.class)
 public final class OakMockSlingRepository implements SlingRepository {
 
     private static final String ADMIN_NAME = "admin";
@@ -58,12 +60,13 @@ public final class OakMockSlingRepository implements SlingRepository {
     private static final Logger log = LoggerFactory.getLogger(OakMockSlingRepository.class);
     
     @Activate
-    protected void activate(BundleContext bundleContext) {
+    protected void activate(ComponentContext componentContext) {
         executor = Executors.newSingleThreadExecutor();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         
-        if (bundleContext.getServiceReference(Executor.class) == null) {
-            bundleContext.registerService(Executor.class, executor, null);
+        BundleContext bundleContext = componentContext.getBundleContext();
+        if (bundleContext.getServiceReference(Executor.class.getName()) == null) {
+            bundleContext.registerService(Executor.class.getName(), executor, null);
         }
         
         Oak oak = new Oak()
@@ -89,7 +92,7 @@ public final class OakMockSlingRepository implements SlingRepository {
         // shutdown OAK JCR repository
         ((JackrabbitRepository)repository).shutdown();
     }
-
+    
     private void shutdownExecutorService(Object instance, String fieldName) {
         try {
             Field executorField = instance.getClass().getDeclaredField(fieldName); 
@@ -101,7 +104,7 @@ public final class OakMockSlingRepository implements SlingRepository {
             log.error("Potential Memory leak: Unable to shutdown executor service from field '" + fieldName + "' in " + instance, ex);
         }
     }
-    
+
     public String getDescriptor(String key) {
         return repository.getDescriptor(key);
     }
@@ -159,12 +162,6 @@ public final class OakMockSlingRepository implements SlingRepository {
 
     public boolean isStandardDescriptor(String key) {
         return repository.isStandardDescriptor(key);
-    }
-
-    @Override
-    public Session impersonateFromService(String subServiceName, Credentials credentials, String workspaceName)
-            throws LoginException, RepositoryException {
-        return repository.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
 }

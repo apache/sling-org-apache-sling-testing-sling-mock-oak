@@ -23,21 +23,21 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
-        <version>30</version>
+        <version>26</version>
         <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>bundle</packaging>
   
-    <name>Apache Sling Testing Sling Mock Jackrabbit Oak-based Resource Resolver</name>
+    <name>Apache Sling Testing Sling Mock Oak-based Resource Resolver</name>
     <description>Implements a resource resolver type for Jackrabbit Oak that can be used in unit tests based on Sling Mocks.</description>
   
     <properties>
-        <oak.version>1.4.1</oak.version>
-        <jackrabbit.version>2.12.1</jackrabbit.version>
-        <sling-mock.version>2.2.12</sling-mock.version>
+        <oak.version>1.2.2</oak.version>
+        <jackrabbit.version>2.10.1</jackrabbit.version>
+        <sling-mock.version>1.9.6</sling-mock.version>
     </properties>
 
     <scm>
@@ -83,15 +83,10 @@
             <version>${jackrabbit.version}</version>
         </dependency>
 
-        <!-- those two compile dependencies are requires to avoid "Dependency-reduced POM written" endless loop in maven-shade-plugin -->
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <version>2.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -109,7 +104,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.testing.logging-mock</artifactId>
-            <version>2.0.0</version>
+            <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
   
@@ -118,42 +113,68 @@
     <build>
         <plugins>
     
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-            </plugin>
-      
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <configuration>
-                    <!--
-                        embed all jackrabbit artifacts to prevent classpath clashes
-                        also include selected Sling bundles which are required
-                        at runtime. Note that we don't relocate the packages
-                        since org.apache.sling.jcr.resource already embeds some
-                        jackrabbit classes which lead to a non-working jar
-                    -->
-                    <artifactSet>
-                        <includes>
-                            <include>org.apache.jackrabbit:*</include>
-                        </includes>
-                    </artifactSet>
-                    <createSourcesJar>true</createSourcesJar>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-  
-            <plugin>
+          <!-- Publish test artifact -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+    
+          <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <extensions>true</extensions>
+          </plugin>
+    
+          <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-scr-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-scr-scrdescriptor</id>
+                <goals>
+                  <goal>scr</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-shade-plugin</artifactId>
+              <version>2.4.1</version>
+              <configuration>
+                <!--
+                    embed all jackrabbit artifacts to prevent classpath clashes
+                    also include selected Sling bundles which are required
+                    at runtime. Note that we don't relocate the packages
+                    since org.apache.sling.jcr.resource already embeds some
+                    jackrabbit classes which lead to a non-working jar
+                -->
+                <artifactSet>
+                    <includes>
+                        <include>org.apache.jackrabbit:*</include>
+                    </includes>
+                </artifactSet>
+                <createSourcesJar>true</createSourcesJar>
+              </configuration>
+              <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                </execution>
+              </executions>
+          </plugin>
+
+          <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
@@ -161,7 +182,7 @@
                         <exclude>dependency-reduced-pom.xml</exclude>
                     </excludes>
                 </configuration>
-            </plugin>
+          </plugin>
         </plugins>
     </build>
   
