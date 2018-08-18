@@ -24,6 +24,7 @@ import static org.apache.jackrabbit.oak.plugins.index.IndexUtils.createIndexDefi
 
 import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer;
 import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Adds some default indexes useful for by sling resource-jcr mapping.
@@ -32,7 +33,7 @@ import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
 final class ExtraSlingContent implements RepositoryInitializer {
 
     @Override
-    public void initialize(NodeBuilder root) {
+    public void initialize(@NotNull NodeBuilder root) {
         if (root.hasChildNode(INDEX_DEFINITIONS_NAME)) {
             NodeBuilder index = root.child(INDEX_DEFINITIONS_NAME);
 
