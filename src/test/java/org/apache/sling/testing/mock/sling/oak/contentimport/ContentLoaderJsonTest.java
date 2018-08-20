@@ -18,14 +18,31 @@
  */
 package org.apache.sling.testing.mock.sling.oak.contentimport;
 
+import static org.junit.Assert.assertNotNull;
+
+import org.apache.jackrabbit.JcrConstants;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.loader.AbstractContentLoaderJsonTest;
+import org.junit.Test;
 
+@SuppressWarnings("null")
 public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
 
     @Override
     protected ResourceResolverType getResourceResolverType() {
         return ResourceResolverType.JCR_OAK;
+    }
+
+    @Test
+    public void testJcrUuid() {
+        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/file/jcr:content");
+        ValueMap props = ResourceUtil.getValueMap(resource);
+        
+        // jcr:uuid is not imported from json with OAK repository - just check for not null
+        assertNotNull(props.get(JcrConstants.JCR_UUID));
     }
 
 }
