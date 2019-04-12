@@ -19,9 +19,13 @@
 package org.apache.sling.testing.mock.sling.oak;
 
 import static java.util.Collections.singleton;
+import static org.apache.jackrabbit.JcrConstants.JCR_SYSTEM;
 import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NAME;
 import static org.apache.jackrabbit.oak.plugins.index.IndexUtils.createIndexDefinition;
+import static org.apache.jackrabbit.oak.spi.namespace.NamespaceConstants.REP_NAMESPACES;
+import static org.apache.sling.jcr.resource.JcrResourceConstants.SLING_NAMESPACE_URI;
 
+import org.apache.jackrabbit.oak.plugins.name.Namespaces;
 import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer;
 import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +38,19 @@ final class ExtraSlingContent implements RepositoryInitializer {
 
     @Override
     public void initialize(@NotNull NodeBuilder root) {
+
+        // register sling namespace
+        String slingNs = "sling";                
+        if (root.hasChildNode(JCR_SYSTEM)) {
+            NodeBuilder jcrSystem = root.getChildNode(JCR_SYSTEM);
+            if (jcrSystem.hasChildNode(REP_NAMESPACES)) {
+                NodeBuilder namespaces = jcrSystem.getChildNode(REP_NAMESPACES);
+                slingNs = Namespaces.addCustomMapping(namespaces, SLING_NAMESPACE_URI, slingNs);
+                Namespaces.buildIndexNode(namespaces);
+            }
+        }
+
+        // add useful index definitions
         if (root.hasChildNode(INDEX_DEFINITIONS_NAME)) {
             NodeBuilder index = root.child(INDEX_DEFINITIONS_NAME);
 
@@ -42,10 +59,10 @@ final class ExtraSlingContent implements RepositoryInitializer {
             property(index, "jcrLockOwner", "jcr:lockOwner");
 
             // sling:
-            property(index, "slingAlias", "sling:alias");
-            property(index, "slingResource", "sling:resource");
-            property(index, "slingResourceType", "sling:resourceType");
-            property(index, "slingVanityPath", "sling:vanityPath");
+            property(index, "slingAlias", slingNs + ":alias");
+            property(index, "slingResource", slingNs + ":resource");
+            property(index, "slingResourceType", slingNs + ":resourceType");
+            property(index, "slingVanityPath", slingNs + ":vanityPath");
         }
     }
 
