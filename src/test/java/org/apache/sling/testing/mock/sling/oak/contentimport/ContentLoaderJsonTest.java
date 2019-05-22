@@ -26,6 +26,8 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -68,7 +70,7 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
         Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
         ValueMap props = ResourceUtil.getValueMap(resource);
 
-        assertMixinNodeType(resource, "mix:referenceable");
+        assertMixinNodeType(resource, JcrConstants.MIX_REFERENCEABLE);
         assertNotNull(props.get(JcrConstants.JCR_UUID));
     }
 
@@ -84,23 +86,11 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
     }
 
     private void assertMixinNodeType(final Resource resource, final String mixinNodeType) throws RepositoryException {
-        ArrayList<NodeType> mixinNodeTypes = Lists.newArrayList();
         Node node = resource.adaptTo(Node.class);
         if (node != null) {
-            mixinNodeTypes.addAll(Arrays.asList(node.getMixinNodeTypes()));
+            assertTrue(node.isNodeType(mixinNodeType));
         } else {
-            ValueMap props = ResourceUtil.getValueMap(resource);
-            mixinNodeTypes.addAll(Arrays.asList((NodeType[]) props.get(JcrConstants.JCR_MIXINTYPES)));
+            fail();
         }
-
-        Object hit = CollectionUtils.find(mixinNodeTypes, new Predicate() {
-            @Override
-            public boolean evaluate(Object o) {
-                NodeType nodeType = (NodeType) o;
-                return nodeType.getName().equals(mixinNodeType);
-            }
-        });
-        assertNotNull(hit);
     }
-
 }
