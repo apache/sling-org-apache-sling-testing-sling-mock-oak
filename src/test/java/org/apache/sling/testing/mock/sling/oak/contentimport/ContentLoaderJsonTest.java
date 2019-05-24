@@ -18,19 +18,14 @@
  */
 package org.apache.sling.testing.mock.sling.oak.contentimport;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceUtil;
@@ -38,8 +33,6 @@ import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.loader.AbstractContentLoaderJsonTest;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("null")
 public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
