@@ -18,7 +18,13 @@
  */
 package org.apache.sling.testing.mock.sling.oak.contentimport;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
@@ -45,4 +51,39 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
         assertNotNull(props.get(JcrConstants.JCR_UUID));
     }
 
+    @Test
+    public void testMixinNodeType() throws Exception {
+        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+
+        assertMixinNodeType(resource, "app:TestMixin");
+    }
+
+    @Test
+    public void testReferenceable() throws Exception {
+        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+        ValueMap props = ResourceUtil.getValueMap(resource);
+
+        assertMixinNodeType(resource, JcrConstants.MIX_REFERENCEABLE);
+        assertNotNull(props.get(JcrConstants.JCR_UUID));
+    }
+
+    @Test
+    public void testLinkedFile() throws Exception {
+        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFile");
+        Resource targetResource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+        Node node = resource.adaptTo(Node.class);
+        Node target = node.getProperty(JcrConstants.JCR_CONTENT).getNode();
+
+        assertEquals(targetResource.getPath(), target.getPath());
+        assertEquals(targetResource.getValueMap().get(JcrConstants.JCR_UUID), target.getProperty(JcrConstants.JCR_UUID).getString());
+    }
+
+    private void assertMixinNodeType(final Resource resource, final String mixinNodeType) throws RepositoryException {
+        Node node = resource.adaptTo(Node.class);
+        if (node != null) {
+            assertTrue(node.isNodeType(mixinNodeType));
+        } else {
+            fail();
+        }
+    }
 }
