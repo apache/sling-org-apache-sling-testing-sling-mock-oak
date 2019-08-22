@@ -35,8 +35,8 @@
     <description>Implements a resource resolver type for Jackrabbit Oak that can be used in unit tests based on Sling Mocks.</description>
   
     <properties>
-        <oak.version>1.8.9</oak.version>
-        <jackrabbit.version>2.16.3</jackrabbit.version>
+        <oak.version>1.16.0</oak.version>
+        <jackrabbit.version>2.18.2</jackrabbit.version>
         <sling-mock.version>2.3.14</sling-mock.version>
     </properties>
 
@@ -70,6 +70,12 @@
             <artifactId>org.apache.sling.testing.sling-mock.core</artifactId>
             <version>${sling-mock.version}</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>jackrabbit-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -77,6 +83,12 @@
             <version>${sling-mock.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>jackrabbit-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     
         <dependency>
@@ -92,6 +104,12 @@
             <groupId>org.apache.jackrabbit</groupId>
             <artifactId>oak-jcr</artifactId>
             <version>${oak.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>jackrabbit-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <!-- Ensure we depend on more recent jackrabbit artifacts required by Oak -->
@@ -103,8 +121,8 @@
 
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
-            <artifactId>jackrabbit-api</artifactId>
-            <version>${jackrabbit.version}</version>
+            <artifactId>oak-jackrabbit-api</artifactId>
+            <version>${oak.version}</version>
         </dependency>
 
         <!-- those two compile dependencies are requires to avoid "Dependency-reduced POM written" endless loop in maven-shade-plugin -->
@@ -170,6 +188,9 @@
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
                         </includes>
+                        <excludes>
+                            <include>org.apache.jackrabbit:oak-jackrabbit-api</include>
+                        </excludes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
                 </configuration>
