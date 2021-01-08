@@ -23,12 +23,12 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>38</version>
+        <version>40</version>
         <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>2.1.11-1.16.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
+    <version>3.0.0-1.16.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
   
     <name>Apache Sling Testing Sling Mock Oak</name>
@@ -37,7 +37,7 @@
     <properties>
         <oak.version>1.16.0</oak.version>
         <jackrabbit.version>2.18.2</jackrabbit.version>
-        <sling-mock.version>2.5.0</sling-mock.version>
+        <sling-mock.version>3.0.0-SNAPSHOT</sling-mock.version>
     </properties>
 
     <scm>
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.1.0</version>
+            <version>3.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
