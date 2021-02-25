@@ -49,6 +49,14 @@
 
     <dependencies>
 
+        <!-- Update to version 1.7.2 to show problem with sling:alias query (SLING-10167) -->
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.resourceresolver</artifactId>
+            <version>1.7.2</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
