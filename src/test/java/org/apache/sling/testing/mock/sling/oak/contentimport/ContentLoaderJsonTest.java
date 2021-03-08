@@ -46,7 +46,7 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
     public void testJcrUuid() {
         Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/file/jcr:content");
         ValueMap props = ResourceUtil.getValueMap(resource);
-        
+
         // jcr:uuid is not imported from json with OAK repository - just check for not null
         assertNotNull(props.get(JcrConstants.JCR_UUID));
     }

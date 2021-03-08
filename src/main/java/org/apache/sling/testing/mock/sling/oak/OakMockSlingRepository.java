@@ -54,34 +54,34 @@ public final class OakMockSlingRepository implements SlingRepository {
     private Repository repository;
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
-    
+
     private static final Logger log = LoggerFactory.getLogger(OakMockSlingRepository.class);
-    
+
     @Activate
     protected void activate(BundleContext bundleContext) {
         executor = Executors.newSingleThreadExecutor();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-        
+
         if (bundleContext.getServiceReference(Executor.class) == null) {
             bundleContext.registerService(Executor.class, executor, null);
         }
-        
+
         Oak oak = new Oak()
                 .with(executor)
                 .with(scheduledExecutor);
-        
+
         Jcr jcr = new Jcr(oak)
                 .with(new ExtraSlingContent())
                 .with(executor)
                 .with(scheduledExecutor);
-        
+
         this.repository = jcr.createRepository();
     }
 
     @Deactivate
     protected void deactivate(ComponentContext componentContext) {
         // shutdown executors
-        // force immediate shutdown for all executors without waiting for tasks for completion - we're only in unit tests! 
+        // force immediate shutdown for all executors without waiting for tasks for completion - we're only in unit tests!
         executor.shutdownNow();
         scheduledExecutor.shutdownNow();
         shutdownExecutorService(repository, "scheduledExecutor");
@@ -92,7 +92,7 @@ public final class OakMockSlingRepository implements SlingRepository {
 
     private void shutdownExecutorService(Object instance, String fieldName) {
         try {
-            Field executorField = instance.getClass().getDeclaredField(fieldName); 
+            Field executorField = instance.getClass().getDeclaredField(fieldName);
             executorField.setAccessible(true);
             ExecutorService executor = (ExecutorService)executorField.get(instance);
             executor.shutdownNow();
@@ -101,7 +101,7 @@ public final class OakMockSlingRepository implements SlingRepository {
             log.error("Potential Memory leak: Unable to shutdown executor service from field '" + fieldName + "' in " + instance, ex);
         }
     }
-    
+
     public String getDescriptor(String key) {
         return repository.getDescriptor(key);
     }
@@ -118,33 +118,33 @@ public final class OakMockSlingRepository implements SlingRepository {
         return repository.login();
     }
 
-    public Session login(Credentials credentials, String workspaceName) 
+    public Session login(Credentials credentials, String workspaceName)
             throws LoginException, NoSuchWorkspaceException, RepositoryException {
         return repository.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
-    public Session login(Credentials credentials) 
+    public Session login(Credentials credentials)
             throws LoginException, RepositoryException {
         return repository.login(credentials);
     }
 
-    public Session login(String workspaceName) 
+    public Session login(String workspaceName)
             throws LoginException, NoSuchWorkspaceException, RepositoryException {
         return repository.login((workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
-    public Session loginAdministrative(String workspaceName) 
+    public Session loginAdministrative(String workspaceName)
             throws RepositoryException {
         final Credentials credentials = new SimpleCredentials(ADMIN_NAME, ADMIN_PASSWORD.toCharArray());
         return this.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
     @Override
-    public Session loginService(String subServiceName, String workspaceName) 
+    public Session loginService(String subServiceName, String workspaceName)
             throws LoginException, RepositoryException {
         return loginAdministrative(workspaceName);
     }
-    
+
     public Value getDescriptorValue(String key) {
         return repository.getDescriptorValue(key);
     }

@@ -27,5 +27,5 @@ public class ContentLoaderJsonDamTest extends AbstractContentLoaderJsonDamTest {
     protected ResourceResolverType getResourceResolverType() {
         return ResourceResolverType.JCR_OAK;
     }
-    
+
 }

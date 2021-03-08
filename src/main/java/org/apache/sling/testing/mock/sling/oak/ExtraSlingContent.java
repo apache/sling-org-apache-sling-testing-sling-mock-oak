@@ -40,7 +40,7 @@ final class ExtraSlingContent implements RepositoryInitializer {
     public void initialize(@NotNull NodeBuilder root) {
 
         // register sling namespace
-        String slingNs = "sling";                
+        String slingNs = "sling";
         if (root.hasChildNode(JCR_SYSTEM)) {
             NodeBuilder jcrSystem = root.getChildNode(JCR_SYSTEM);
             if (jcrSystem.hasChildNode(REP_NAMESPACES)) {
