@@ -23,7 +23,7 @@ import static org.apache.jackrabbit.JcrConstants.JCR_SYSTEM;
 import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NAME;
 import static org.apache.jackrabbit.oak.plugins.index.IndexUtils.createIndexDefinition;
 import static org.apache.jackrabbit.oak.spi.namespace.NamespaceConstants.REP_NAMESPACES;
-import static org.apache.sling.api.SlingConstants.NAMESPACE_URI_ROOT;
+import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_NAMESPACE_URI;
 
 import org.apache.jackrabbit.oak.plugins.name.Namespaces;
 import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer;
@@ -45,7 +45,7 @@ final class ExtraSlingContent implements RepositoryInitializer {
             NodeBuilder jcrSystem = root.getChildNode(JCR_SYSTEM);
             if (jcrSystem.hasChildNode(REP_NAMESPACES)) {
                 NodeBuilder namespaces = jcrSystem.getChildNode(REP_NAMESPACES);
-                slingNs = Namespaces.addCustomMapping(namespaces, NAMESPACE_URI_ROOT, slingNs);
+                slingNs = Namespaces.addCustomMapping(namespaces, SLING_NAMESPACE_URI, slingNs);
                 Namespaces.buildIndexNode(namespaces);
             }
         }
