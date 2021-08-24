@@ -37,7 +37,7 @@
     <properties>
         <oak.version>1.16.0</oak.version>
         <jackrabbit.version>2.18.2</jackrabbit.version>
-        <sling-mock.version>3.0.0</sling-mock.version>
+        <sling-mock.version>3.0.3-SNAPSHOT</sling-mock.version>
 
         <project.build.outputTimestamp>2021-08-24T00:00:00Z</project.build.outputTimestamp>
     </properties>
@@ -210,6 +210,7 @@
                 <configuration>
                     <excludes>
                         <exclude>dependency-reduced-pom.xml</exclude>
+                        <exclude>src/test/resources/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

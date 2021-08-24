@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.testing.mock.sling.oak.contentimport;
+package org.apache.sling.testing.mock.sling.oak.loader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
