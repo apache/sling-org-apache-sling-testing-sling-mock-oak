@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>41</version>
+        <version>44</version>
         <relativePath />
     </parent>
 
@@ -38,14 +38,16 @@
         <oak.version>1.16.0</oak.version>
         <jackrabbit.version>2.18.2</jackrabbit.version>
         <sling-mock.version>3.0.0</sling-mock.version>
+
+        <project.build.outputTimestamp>2021-08-24T00:00:00Z</project.build.outputTimestamp>
     </properties>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-testing-sling-mock-oak.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
 
