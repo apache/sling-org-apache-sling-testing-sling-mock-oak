@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.testing.mock.sling.oak.contentimport;
+package org.apache.sling.testing.mock.sling.oak.loader;
 
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
-import org.apache.sling.testing.mock.sling.loader.AbstractContentLoaderBinaryTest;
+import org.apache.sling.testing.mock.sling.loader.AbstractContentLoaderJsonDamTest;
 
-public class ContentLoaderBinaryTest extends AbstractContentLoaderBinaryTest {
+public class ContentLoaderJsonDamTest extends AbstractContentLoaderJsonDamTest {
 
     @Override
     protected ResourceResolverType getResourceResolverType() {
