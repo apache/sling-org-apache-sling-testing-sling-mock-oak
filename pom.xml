@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.0.0-3-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
+    <version>3.0.1-1.16.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
     <name>Apache Sling Testing Sling Mock Oak</name>
