@@ -42,6 +42,7 @@ import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -81,11 +82,11 @@ public final class OakMockSlingRepository implements SlingRepository {
                 .with(scheduledExecutor);
 
         this.repository = jcr.createRepository();
-        // check if the right Oak version is loaded (wrong versions may be loaded in case of class loader collisions)
+        // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader collisions)
         String expectedVersion = getExpectedVersion();
-        String actualVersion = repository.getDescriptor(REP_VERSION_DESC);;
-        if (!expectedVersion.equals(actualVersion)) {
-            throw new IllegalStateException("Unexpected Oak version " + actualVersion + ", expected " + expectedVersion + ". Make sure to load the `org.apache.sling.testing.sling-mock-oak` dependency before any other dependency which may transitively depend on Apache Jackrabbit Oak as well!");
+        String actualVersion = repository.getDescriptor(REP_VERSION_DESC);
+        if (new ComparableVersion(expectedVersion).compareTo(new ComparableVersion(actualVersion)) > 0) {
+            throw new IllegalStateException("Unexpected (too old) Oak version " + actualVersion + ", expected " + expectedVersion + ". Make sure to load the `org.apache.sling.testing.sling-mock-oak` dependency before any other dependency which may transitively depend on Apache Jackrabbit Oak as well!");
         }
     }
 
