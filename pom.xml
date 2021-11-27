@@ -82,7 +82,6 @@
             <scope>test</scope>
         </dependency>
 
-
         <!-- Depend on oak-jcr, which pulls in all needed Oak artifacts -->
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -183,9 +182,6 @@
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
                         </includes>
-                        <excludes>
-                            <exclude>org.apache.jackrabbit:oak-jackrabbit-api</exclude>
-                        </excludes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
                 </configuration>

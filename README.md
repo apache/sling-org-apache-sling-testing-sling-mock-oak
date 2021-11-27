@@ -6,9 +6,9 @@
 
 This module is part of the [Apache Sling](https://sling.apache.org) project.
 
-Implements a resource resolver type for Jackrabbit Oak that can be used in unit tests based on Sling Mocks.
+Implements a resource resolver type for [Jackrabbit Oak](https://jackrabbit.apache.org/oak) that can be used in unit tests based on Sling Mocks.
 
-This is a separate maven artifacts because it introduces a lot of further dependencies.
+This is a separate Maven artifact because it introduces a lot of further dependencies. In order to prevent dependency version overrides of Oak bundles all necessary bundles are shaded into this JAR (and by that cannot be overwritten by consumers). Make sure to depend on this artifact prior to artifact `org.apache.sling.testing.sling-mock.*` in order to give the Oak classes in this JAR precedence in the Maven test class path.
 
 Documentation:
-http://sling.apache.org/documentation/development/sling-mock.html
+<https://sling.apache.org/documentation/development/sling-mock.html>
