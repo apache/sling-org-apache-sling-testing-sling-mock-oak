@@ -18,7 +18,12 @@
  */
 package org.apache.sling.testing.mock.sling.oak;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +63,7 @@ public final class OakMockSlingRepository implements SlingRepository {
     private static final Logger log = LoggerFactory.getLogger(OakMockSlingRepository.class);
 
     @Activate
-    protected void activate(BundleContext bundleContext) {
+    protected void activate(BundleContext bundleContext) throws IOException {
         executor = Executors.newSingleThreadExecutor();
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -76,6 +81,19 @@ public final class OakMockSlingRepository implements SlingRepository {
                 .with(scheduledExecutor);
 
         this.repository = jcr.createRepository();
+        // check if the right Oak version is loaded (wrong versions may be loaded in case of class loader collisions)
+        String expectedVersion = getExpectedVersion();
+        String actualVersion = repository.getDescriptor(REP_VERSION_DESC);;
+        if (!expectedVersion.equals(actualVersion)) {
+            throw new IllegalStateException("Unexpected Oak version " + actualVersion + ", expected " + expectedVersion + ". Make sure to load the `org.apache.sling.testing.sling-mock-oak` dependency before any other dependency which may transitively depend on Apache Jackrabbit Oak as well!");
+        }
+    }
+
+    private static String getExpectedVersion() throws IOException {
+        try (InputStream inputStream = OakMockSlingRepository.class.getResourceAsStream("oak.version");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            return reader.readLine();
+        }
     }
 
     @Deactivate

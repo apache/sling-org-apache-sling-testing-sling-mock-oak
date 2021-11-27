@@ -151,6 +151,12 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
 
             <plugin>
@@ -200,6 +206,7 @@
                     <excludes>
                         <exclude>dependency-reduced-pom.xml</exclude>
                         <exclude>src/test/resources/**</exclude>
+                        <exclude>src/main/resources/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
