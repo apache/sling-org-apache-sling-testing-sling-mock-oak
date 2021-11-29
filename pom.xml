@@ -28,15 +28,15 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.0.1-1.16.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
+    <version>3.0.1-1.40.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
     <name>Apache Sling Testing Sling Mock Oak</name>
     <description>Implements a resource resolver type for Jackrabbit Oak that can be used in unit tests based on Sling Mocks.</description>
 
     <properties>
-        <oak.version>1.16.0</oak.version>
-        <jackrabbit.version>2.18.2</jackrabbit.version>
+        <oak.version>1.40.0</oak.version>
+        <jackrabbit.version>2.20.2</jackrabbit.version>
         <sling-mock.version>3.1.2</sling-mock.version>
 
         <project.build.outputTimestamp>2021-08-30T16:55:49Z</project.build.outputTimestamp>
@@ -67,12 +67,6 @@
             <artifactId>org.apache.sling.testing.sling-mock.core</artifactId>
             <version>${sling-mock.version}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.jackrabbit</groupId>
-                    <artifactId>jackrabbit-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -80,21 +74,13 @@
             <version>${sling-mock.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.jackrabbit</groupId>
-                    <artifactId>jackrabbit-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.testing.sling-mock.junit4</artifactId>
             <version>${sling-mock.version}</version>
             <scope>test</scope>
         </dependency>
-
 
         <!-- Depend on oak-jcr, which pulls in all needed Oak artifacts -->
         <dependency>
@@ -164,6 +150,12 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
 
             <plugin>
@@ -180,7 +172,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
                     <!--
-                        embed all jackrabbit artifacts to prevent classpath clashes
+                        embed all jackrabbit artifacts, to prevent classpath clashes
                         also include selected Sling bundles which are required
                         at runtime. Note that we don't relocate the packages
                         since org.apache.sling.jcr.resource already embeds some
@@ -190,9 +182,6 @@
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
                         </includes>
-                        <excludes>
-                            <include>org.apache.jackrabbit:oak-jackrabbit-api</include>
-                        </excludes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
                 </configuration>
@@ -213,6 +202,7 @@
                     <excludes>
                         <exclude>dependency-reduced-pom.xml</exclude>
                         <exclude>src/test/resources/**</exclude>
+                        <exclude>src/main/resources/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
