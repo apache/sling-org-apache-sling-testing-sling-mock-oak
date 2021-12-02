@@ -37,7 +37,7 @@
     <properties>
         <oak.version>1.40.0</oak.version>
         <jackrabbit.version>2.20.2</jackrabbit.version>
-        <sling-mock.version>3.2.1-SNAPSHOT</sling-mock.version>
+        <sling-mock.version>3.2.0</sling-mock.version>
 
         <project.build.outputTimestamp>2021-11-29T17:17:10Z</project.build.outputTimestamp>
     </properties>
