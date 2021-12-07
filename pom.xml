@@ -181,6 +181,7 @@
                     <artifactSet>
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
+                            <include>com.google.guava:*</include>
                         </includes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
