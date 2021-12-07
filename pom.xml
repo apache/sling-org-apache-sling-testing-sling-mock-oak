@@ -181,9 +181,18 @@
                     <artifactSet>
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
+                            <include>com.google.guava:*</include>
                         </includes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
+                    <relocations>
+                        <!-- to always use Guava 15, relocate (which does only work for the embedded oak classes,
+                        but not if others from the class path are used) -->
+                        <relocation>
+                            <pattern>com.google.common</pattern>
+                            <shadedPattern>sling-mock-oak.com.google.common</shadedPattern>
+                        </relocation>
+                     </relocations>
                 </configuration>
                 <executions>
                     <execution>
