@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>46</version>
+        <version>47</version>
         <relativePath />
     </parent>
 
@@ -37,7 +37,7 @@
     <properties>
         <oak.version>1.40.0</oak.version>
         <jackrabbit.version>2.20.2</jackrabbit.version>
-        <sling-mock.version>3.2.0</sling-mock.version>
+        <sling-mock.version>3.3.0-SNAPSHOT</sling-mock.version>
 
         <project.build.outputTimestamp>2021-12-07T10:09:46Z</project.build.outputTimestamp>
     </properties>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.7.0</version>
+            <version>4.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
