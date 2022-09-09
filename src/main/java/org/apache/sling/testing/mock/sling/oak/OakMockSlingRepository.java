@@ -139,6 +139,10 @@ public final class OakMockSlingRepository implements SlingRepository {
 
     public Session login(Credentials credentials, String workspaceName)
             throws LoginException, NoSuchWorkspaceException, RepositoryException {
+        if (credentials == null) {
+            // SLING-11572 workaround if a service resource resolver calls isResourceType()
+            return this.loginAdministrative(workspaceName);
+        }
         return repository.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
