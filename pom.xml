@@ -222,6 +222,23 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!-- Set version policy for managing main version with a suffixed oak version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <projectVersionPolicyId>VersionWithSuffixVersionVersionPolicy</projectVersionPolicyId>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.wcm.maven.release-policies</groupId>
+                        <artifactId>io.wcm.maven.release-policies.oddeven-with-suffix-version</artifactId>
+                        <version>1.0.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
         </plugins>
     </build>
 
