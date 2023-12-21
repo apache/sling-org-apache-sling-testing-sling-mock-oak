@@ -36,8 +36,8 @@
 
     <properties>
         <oak.version>1.44.0</oak.version>
-        <jackrabbit.version>2.20.6</jackrabbit.version>
-        <sling-mock.version>3.4.10</sling-mock.version>
+        <jackrabbit.version>2.20.9</jackrabbit.version>
+        <sling-mock.version>3.4.17-SNAPSHOT</sling-mock.version>
 
         <project.build.outputTimestamp>2023-05-16T08:40:51Z</project.build.outputTimestamp>
     </properties>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.7.0</version>
+            <version>5.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
