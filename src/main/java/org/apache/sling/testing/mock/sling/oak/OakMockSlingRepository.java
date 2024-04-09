@@ -18,6 +18,15 @@
  */
 package org.apache.sling.testing.mock.sling.oak;
 
+import javax.jcr.Credentials;
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.SimpleCredentials;
+import javax.jcr.Value;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,15 +37,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.jcr.Credentials;
-import javax.jcr.LoginException;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.oak.Oak;
@@ -72,27 +72,26 @@ public final class OakMockSlingRepository implements SlingRepository {
             bundleContext.registerService(Executor.class, executor, null);
         }
 
-        Oak oak = new Oak()
-                .with(executor)
-                .with(scheduledExecutor);
+        Oak oak = new Oak().with(executor).with(scheduledExecutor);
 
-        Jcr jcr = new Jcr(oak)
-                .with(new ExtraSlingContent())
-                .with(executor)
-                .with(scheduledExecutor);
+        Jcr jcr = new Jcr(oak).with(new ExtraSlingContent()).with(executor).with(scheduledExecutor);
 
         this.repository = jcr.createRepository();
-        // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader collisions)
+        // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader
+        // collisions)
         String expectedVersion = getExpectedVersion();
         String actualVersion = repository.getDescriptor(REP_VERSION_DESC);
         if (new ComparableVersion(expectedVersion).compareTo(new ComparableVersion(actualVersion)) > 0) {
-            throw new IllegalStateException("Unexpected (too old) Oak version " + actualVersion + ", expected " + expectedVersion + ". Make sure to load the `org.apache.sling.testing.sling-mock-oak` dependency before any other dependency which may transitively depend on Apache Jackrabbit Oak as well!");
+            throw new IllegalStateException(
+                    "Unexpected (too old) Oak version " + actualVersion + ", expected " + expectedVersion
+                            + ". Make sure to load the `org.apache.sling.testing.sling-mock-oak` dependency before any other dependency which may transitively depend on Apache Jackrabbit Oak as well!");
         }
     }
 
     private static String getExpectedVersion() throws IOException {
         try (InputStream inputStream = OakMockSlingRepository.class.getResourceAsStream("oak.version");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             return reader.readLine();
         }
     }
@@ -100,24 +99,27 @@ public final class OakMockSlingRepository implements SlingRepository {
     @Deactivate
     protected void deactivate(ComponentContext componentContext) {
         // shutdown executors
-        // force immediate shutdown for all executors without waiting for tasks for completion - we're only in unit tests!
+        // force immediate shutdown for all executors without waiting for tasks for completion - we're only in unit
+        // tests!
         executor.shutdownNow();
         scheduledExecutor.shutdownNow();
         shutdownExecutorService(repository, "scheduledExecutor");
 
         // shutdown OAK JCR repository
-        ((JackrabbitRepository)repository).shutdown();
+        ((JackrabbitRepository) repository).shutdown();
     }
 
     private void shutdownExecutorService(Object instance, String fieldName) {
         try {
             Field executorField = instance.getClass().getDeclaredField(fieldName);
             executorField.setAccessible(true);
-            ExecutorService executor = (ExecutorService)executorField.get(instance);
+            ExecutorService executor = (ExecutorService) executorField.get(instance);
             executor.shutdownNow();
-        }
-        catch (Throwable ex) {
-            log.error("Potential Memory leak: Unable to shutdown executor service from field '" + fieldName + "' in " + instance, ex);
+        } catch (Throwable ex) {
+            log.error(
+                    "Potential Memory leak: Unable to shutdown executor service from field '" + fieldName + "' in "
+                            + instance,
+                    ex);
         }
     }
 
@@ -146,18 +148,15 @@ public final class OakMockSlingRepository implements SlingRepository {
         return repository.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
-    public Session login(Credentials credentials)
-            throws LoginException, RepositoryException {
+    public Session login(Credentials credentials) throws LoginException, RepositoryException {
         return repository.login(credentials);
     }
 
-    public Session login(String workspaceName)
-            throws LoginException, NoSuchWorkspaceException, RepositoryException {
+    public Session login(String workspaceName) throws LoginException, NoSuchWorkspaceException, RepositoryException {
         return repository.login((workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
 
-    public Session loginAdministrative(String workspaceName)
-            throws RepositoryException {
+    public Session loginAdministrative(String workspaceName) throws RepositoryException {
         final Credentials credentials = new SimpleCredentials(ADMIN_NAME, ADMIN_PASSWORD.toCharArray());
         return this.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
@@ -189,5 +188,4 @@ public final class OakMockSlingRepository implements SlingRepository {
             throws LoginException, RepositoryException {
         return repository.login(credentials, (workspaceName == null ? getDefaultWorkspace() : workspaceName));
     }
-
 }

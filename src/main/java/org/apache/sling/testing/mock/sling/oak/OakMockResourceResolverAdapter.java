@@ -36,5 +36,4 @@ public class OakMockResourceResolverAdapter implements ResourceResolverTypeAdapt
     public SlingRepository newSlingRepository() {
         return new OakMockSlingRepository();
     }
-
 }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -28,11 +28,19 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.2.0-1.44.0-SNAPSHOT</version> <!-- second component is the oak version, please keep in sync with oak.version property -->
+    <version>3.2.0-1.44.0-SNAPSHOT</version>
+    <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
     <name>Apache Sling Testing Sling Mock Oak</name>
     <description>Implements a resource resolver type for Jackrabbit Oak that can be used in unit tests based on Sling Mocks.</description>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/apache/sling-org-apache-sling-testing-sling-mock-oak.git</url>
+    </scm>
 
     <properties>
         <oak.version>1.44.0</oak.version>
@@ -41,13 +49,6 @@
 
         <project.build.outputTimestamp>2023-05-16T08:40:51Z</project.build.outputTimestamp>
     </properties>
-
-    <scm>
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</developerConnection>
-        <url>https://github.com/apache/sling-org-apache-sling-testing-sling-mock-oak.git</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <dependencies>
 
@@ -162,7 +163,7 @@
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-annotation_1.3_spec</artifactId>
-             <version>1.0</version>
+            <version>1.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -211,14 +212,14 @@
                             <pattern>com.google.common</pattern>
                             <shadedPattern>sling-mock-oak.com.google.common</shadedPattern>
                         </relocation>
-                     </relocations>
+                    </relocations>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>

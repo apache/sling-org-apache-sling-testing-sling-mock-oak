@@ -27,5 +27,4 @@ public class JcrResourceResolverTest extends AbstractJcrResourceResolverTest {
     protected ResourceResolverType getResourceResolverType() {
         return ResourceResolverType.JCR_OAK;
     }
-
 }
