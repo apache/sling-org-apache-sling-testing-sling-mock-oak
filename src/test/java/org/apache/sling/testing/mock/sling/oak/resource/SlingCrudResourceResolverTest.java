@@ -27,5 +27,4 @@ public class SlingCrudResourceResolverTest extends AbstractSlingCrudResourceReso
     protected ResourceResolverType getResourceResolverType() {
         return ResourceResolverType.JCR_OAK;
     }
-
 }

@@ -18,17 +18,17 @@
  */
 package org.apache.sling.testing.mock.sling.oak;
 
+import org.apache.jackrabbit.oak.plugins.name.Namespaces;
+import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer;
+import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
+import org.jetbrains.annotations.NotNull;
+
 import static java.util.Collections.singleton;
 import static org.apache.jackrabbit.JcrConstants.JCR_SYSTEM;
 import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NAME;
 import static org.apache.jackrabbit.oak.plugins.index.IndexUtils.createIndexDefinition;
 import static org.apache.jackrabbit.oak.spi.namespace.NamespaceConstants.REP_NAMESPACES;
 import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_NAMESPACE_URI;
-
-import org.apache.jackrabbit.oak.plugins.name.Namespaces;
-import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer;
-import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Adds some default indexes useful for by sling resource-jcr mapping.
@@ -74,5 +74,4 @@ final class ExtraSlingContent implements RepositoryInitializer {
             createIndexDefinition(index, indexName, true, false, singleton(propertyName), null);
         }
     }
-
 }

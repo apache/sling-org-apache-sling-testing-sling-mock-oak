@@ -18,11 +18,6 @@
  */
 package org.apache.sling.testing.mock.sling.oak.loader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
@@ -34,6 +29,11 @@ import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.loader.AbstractContentLoaderJsonTest;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 @SuppressWarnings("null")
 public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
 
@@ -44,7 +44,8 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
 
     @Test
     public void testJcrUuid() {
-        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/file/jcr:content");
+        Resource resource =
+                context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/file/jcr:content");
         ValueMap props = ResourceUtil.getValueMap(resource);
 
         // jcr:uuid is not imported from json with OAK repository - just check for not null
@@ -53,14 +54,18 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
 
     @Test
     public void testMixinNodeType() throws Exception {
-        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+        Resource resource = context.resourceResolver()
+                .getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/"
+                        + JcrConstants.JCR_CONTENT);
 
         assertMixinNodeType(resource, "app:TestMixin");
     }
 
     @Test
     public void testReferenceable() throws Exception {
-        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+        Resource resource = context.resourceResolver()
+                .getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/"
+                        + JcrConstants.JCR_CONTENT);
         ValueMap props = ResourceUtil.getValueMap(resource);
 
         assertMixinNodeType(resource, JcrConstants.MIX_REFERENCEABLE);
@@ -69,13 +74,18 @@ public class ContentLoaderJsonTest extends AbstractContentLoaderJsonTest {
 
     @Test
     public void testLinkedFile() throws Exception {
-        Resource resource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFile");
-        Resource targetResource = context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/" + JcrConstants.JCR_CONTENT);
+        Resource resource =
+                context.resourceResolver().getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFile");
+        Resource targetResource = context.resourceResolver()
+                .getResource(path + "/sample/en/jcr:content/par/image/ntLinkedFileTargetWithMixin/"
+                        + JcrConstants.JCR_CONTENT);
         Node node = resource.adaptTo(Node.class);
         Node target = node.getProperty(JcrConstants.JCR_CONTENT).getNode();
 
         assertEquals(targetResource.getPath(), target.getPath());
-        assertEquals(targetResource.getValueMap().get(JcrConstants.JCR_UUID), target.getProperty(JcrConstants.JCR_UUID).getString());
+        assertEquals(
+                targetResource.getValueMap().get(JcrConstants.JCR_UUID),
+                target.getProperty(JcrConstants.JCR_UUID).getString());
     }
 
     private void assertMixinNodeType(final Resource resource, final String mixinNodeType) throws RepositoryException {
