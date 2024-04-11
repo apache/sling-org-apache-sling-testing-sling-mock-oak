@@ -18,6 +18,7 @@
  */
 package org.apache.sling.testing.mock.sling.oak;
 
+import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.testing.mock.sling.spi.ResourceResolverTypeAdapter;
@@ -35,5 +36,17 @@ public class OakMockResourceResolverAdapter implements ResourceResolverTypeAdapt
     @Override
     public SlingRepository newSlingRepository() {
         return new OakMockSlingRepository();
+    }
+
+    @Override
+    public Object snapshot(SlingRepository repository) {
+        OakMockSlingRepository mockRepository = (OakMockSlingRepository) repository;
+        return mockRepository.snapshot();
+    }
+
+    @Override
+    public SlingRepository newSlingRepositoryFromSnapshot(Object snapshot) {
+        NodeState rootNodeState = (NodeState) snapshot;
+        return new OakMockSlingRepository(rootNodeState);
     }
 }

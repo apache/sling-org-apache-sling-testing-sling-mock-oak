@@ -41,6 +41,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
+import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore;
+import org.apache.jackrabbit.oak.spi.state.NodeState;
+import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
 import org.osgi.framework.BundleContext;
@@ -61,7 +64,20 @@ public final class OakMockSlingRepository implements SlingRepository {
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
 
+    private final NodeStore nodeStore;
+    private final boolean fromScratch;
+
     private static final Logger log = LoggerFactory.getLogger(OakMockSlingRepository.class);
+
+    public OakMockSlingRepository() {
+        this.nodeStore = new MemoryNodeStore();
+        this.fromScratch = true;
+    }
+
+    public OakMockSlingRepository(NodeState startingState) {
+        this.nodeStore = new MemoryNodeStore(startingState);
+        this.fromScratch = false;
+    }
 
     @Activate
     protected void activate(BundleContext bundleContext) throws IOException {
@@ -72,9 +88,12 @@ public final class OakMockSlingRepository implements SlingRepository {
             bundleContext.registerService(Executor.class, executor, null);
         }
 
-        Oak oak = new Oak().with(executor).with(scheduledExecutor);
+        Oak oak = new Oak(this.nodeStore).with(executor).with(scheduledExecutor);
 
-        Jcr jcr = new Jcr(oak).with(new ExtraSlingContent()).with(executor).with(scheduledExecutor);
+        Jcr jcr = new Jcr(oak).with(executor).with(scheduledExecutor);
+        if (fromScratch) {
+            jcr.with(new ExtraSlingContent());
+        }
 
         this.repository = jcr.createRepository();
         // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader
@@ -121,6 +140,10 @@ public final class OakMockSlingRepository implements SlingRepository {
                             + instance,
                     ex);
         }
+    }
+
+    NodeState snapshot() {
+        return nodeStore.getRoot();
     }
 
     public String getDescriptor(String key) {
