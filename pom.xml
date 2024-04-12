@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.2.0-1.44.0-SNAPSHOT</version>
+    <version>4.0.0-1.60.0-SNAPSHOT</version>
     <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
@@ -43,8 +43,8 @@
     </scm>
 
     <properties>
-        <oak.version>1.44.0</oak.version>
-        <jackrabbit.version>2.20.9</jackrabbit.version>
+        <oak.version>1.60.0</oak.version>
+        <jackrabbit.version>2.20.13</jackrabbit.version>
         <sling-mock.version>3.5.0-SNAPSHOT</sling-mock.version>
 
         <project.build.outputTimestamp>2023-05-16T08:40:51Z</project.build.outputTimestamp>
@@ -201,18 +201,9 @@
                     <artifactSet>
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
-                            <include>com.google.guava:*</include>
                         </includes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
-                    <relocations>
-                        <!-- to always use Guava 15, relocate (which does only work for the embedded oak classes,
-                        but not if others from the class path are used) -->
-                        <relocation>
-                            <pattern>com.google.common</pattern>
-                            <shadedPattern>sling-mock-oak.com.google.common</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
                     <execution>
