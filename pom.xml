@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.2.0-1.22.15-SNAPSHOT</version>
+    <version>3.2.0-1.22.15</version>
     <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
@@ -38,7 +38,7 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-testing-sling-mock-oak.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>org.apache.sling.testing.sling-mock-oak-3.2.0-1.22.15</tag>
         <url>https://github.com/apache/sling-org-apache-sling-testing-sling-mock-oak.git</url>
     </scm>
 
@@ -47,7 +47,7 @@
         <jackrabbit.version>2.20.9</jackrabbit.version>
         <sling-mock.version>3.5.0</sling-mock.version>
 
-        <project.build.outputTimestamp>2023-05-16T08:40:51Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-04-17T18:15:42Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
