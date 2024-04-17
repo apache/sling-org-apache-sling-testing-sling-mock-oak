@@ -23,12 +23,12 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>60</version>
+        <version>52</version>
         <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-    <version>3.2.0-1.44.0-SNAPSHOT</version>
+    <version>3.2.0-1.22.15-SNAPSHOT</version>
     <!-- second component is the oak version, please keep in sync with oak.version property -->
     <packaging>jar</packaging>
 
@@ -43,7 +43,7 @@
     </scm>
 
     <properties>
-        <oak.version>1.44.0</oak.version>
+        <oak.version>1.22.15</oak.version>
         <jackrabbit.version>2.20.9</jackrabbit.version>
         <sling-mock.version>3.5.0-SNAPSHOT</sling-mock.version>
 
@@ -107,6 +107,14 @@
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Embed Guava version required by Oak 1.22 -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>15.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Ensure we depend on more recent jackrabbit artifacts required by Oak -->
