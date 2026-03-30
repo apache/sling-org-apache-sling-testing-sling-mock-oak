@@ -46,7 +46,7 @@
         <sling.java.version>11</sling.java.version>
         <oak.version>1.86.0</oak.version>
         <jackrabbit.version>2.22.2</jackrabbit.version>
-        <sling-mock.version>3.5.0</sling-mock.version>
+        <sling-mock.version>3.6.0</sling-mock.version>
 
         <project.build.outputTimestamp>2025-10-09T12:28:25Z</project.build.outputTimestamp>
     </properties>
