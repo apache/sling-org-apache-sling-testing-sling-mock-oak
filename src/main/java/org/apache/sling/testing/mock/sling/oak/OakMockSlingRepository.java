@@ -28,6 +28,7 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,6 +47,9 @@ import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexEnabled;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexMissingWarning;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexSupport;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -63,6 +67,7 @@ public final class OakMockSlingRepository implements SlingRepository {
     private Repository repository;
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
+    private Closeable luceneIndexProvider;
 
     private final NodeStore nodeStore;
     private final boolean fromScratch;
@@ -94,11 +99,18 @@ public final class OakMockSlingRepository implements SlingRepository {
         if (fromScratch) {
             jcr.with(new ExtraSlingContent());
         }
+        // optional Lucene index support, enabled via OakLuceneContextPlugins.OAK_LUCENE
+        String expectedVersion = getExpectedVersion();
+        if (bundleContext.getServiceReference(LuceneIndexEnabled.class) != null) {
+            LuceneIndexSupport.validate(expectedVersion);
+            luceneIndexProvider = LuceneIndexSupport.register(jcr);
+        } else {
+            jcr.with(new LuceneIndexMissingWarning(expectedVersion));
+        }
 
         this.repository = jcr.createRepository();
         // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader
         // collisions)
-        String expectedVersion = getExpectedVersion();
         String actualVersion = repository.getDescriptor(REP_VERSION_DESC);
         if (new ComparableVersion(expectedVersion).compareTo(new ComparableVersion(actualVersion)) > 0) {
             throw new IllegalStateException(
@@ -126,6 +138,14 @@ public final class OakMockSlingRepository implements SlingRepository {
 
         // shutdown OAK JCR repository
         ((JackrabbitRepository) repository).shutdown();
+
+        if (luceneIndexProvider != null) {
+            try {
+                luceneIndexProvider.close();
+            } catch (IOException ex) {
+                log.warn("Unable to close Lucene index provider", ex);
+            }
+        }
     }
 
     private void shutdownExecutorService(Object instance, String fieldName) {

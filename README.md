@@ -16,5 +16,38 @@ In order to execute tests with a version **newer than the Oak version** shaded i
 
 Downgrading to an **older Oak version** is not supported and will lead to an exception (if some earlier artifacts in the class path provide an old Oak implementation).
 
+## Lucene index support (optional)
+
+By default only property indexes are available, so full-text queries (`jcr:contains`) return no results, and queries relying on Lucene index definitions are not served by an index. Lucene index support can be enabled per context:
+
+1. Add `oak-lucene` to your test dependencies. Use the same Oak version that is shaded into this artifact (the second part of its version, e.g. `1.86.0` for `4.1.0-1.86.0`):
+
+```xml
+<dependency>
+    <groupId>org.apache.jackrabbit</groupId>
+    <artifactId>oak-lucene</artifactId>
+    <version>1.86.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+2. Register the `org.apache.sling.testing.mock.sling.oak.lucene.OakLuceneContextPlugins.OAK_LUCENE` context plugin for the contexts that need Lucene indexes:
+
+```java
+SlingContext context = new SlingContextBuilder(ResourceResolverType.JCR_OAK)
+        .plugin(OakLuceneContextPlugins.OAK_LUCENE)
+        .build();
+
+AemContext context = new AemContextBuilder(ResourceResolverType.JCR_OAK)
+        .plugin(OakLuceneContextPlugins.OAK_LUCENE)
+        .build();
+```
+
+Without the plugin, the behavior is unchanged, also if `oak-lucene` is present in the class path. A warning is logged if a Lucene index definition is found in `/oak:index` while Lucene index support is not enabled.
+
+With the plugin, setting up the context fails if `oak-lucene` is missing or older than the shaded Oak version. Some artifacts also contain (parts of) the Oak Lucene classes, e.g. the AEM API JARs (`uber-jar`, `aem-sdk-api`). These are not sufficient, so make sure to place the `oak-lucene` dependency before such artifacts in the test class path.
+
+Lucene index definitions are created as usual below `/oak:index` (e.g. in the test setup or via the content loader), and index definitions from a real instance can be used unchanged. No background async indexing is running in the mock repository: **async indexes are updated synchronously** within each commit instead. This applies to all async lanes referenced by index definitions in `/oak:index` (e.g. `async=["async"]`, `async=["fulltext-async"]`, or hybrid indexes like `async=["async", "nrt"]` and `async=["async", "sync"]`). So content is searchable as soon as the session is saved, and tests don't need to wait for indexing. The index data is kept in the in-memory repository, no files are written.
+
 Documentation:
 <https://sling.apache.org/documentation/development/sling-mock.html>

@@ -125,6 +125,15 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Optional Lucene index support: users have to add oak-lucene to their own test class path to enable it -->
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-lucene</artifactId>
+            <version>${oak.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- those two compile dependencies are requires to avoid "Dependency-reduced POM written" endless loop in maven-shade-plugin -->
         <dependency>
             <groupId>javax.jcr</groupId>
@@ -202,6 +211,12 @@
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
                         </includes>
+                        <!-- optional Lucene index support is not embedded, see README -->
+                        <excludes>
+                            <exclude>org.apache.jackrabbit:oak-lucene</exclude>
+                            <exclude>org.apache.jackrabbit:oak-search</exclude>
+                            <exclude>org.apache.jackrabbit:oak-store-document</exclude>
+                        </excludes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
                 </configuration>
