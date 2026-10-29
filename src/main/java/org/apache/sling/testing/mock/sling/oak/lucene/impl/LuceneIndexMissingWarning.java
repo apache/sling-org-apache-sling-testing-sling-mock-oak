@@ -21,6 +21,7 @@ package org.apache.sling.testing.mock.sling.oak.lucene.impl;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.jackrabbit.oak.commons.PathUtils;
 import org.apache.jackrabbit.oak.plugins.index.IndexConstants;
 import org.apache.jackrabbit.oak.spi.commit.CommitInfo;
 import org.apache.jackrabbit.oak.spi.commit.DefaultEditor;
@@ -101,7 +102,7 @@ public final class LuceneIndexMissingWarning implements EditorProvider {
     }
 
     private void checkIndexDefinition(@NotNull String name, @NotNull NodeState definition) {
-        String indexPath = "/" + IndexConstants.INDEX_DEFINITIONS_NAME + "/" + name;
+        String indexPath = PathUtils.concat(PathUtils.ROOT_PATH, IndexConstants.INDEX_DEFINITIONS_NAME, name);
         if (TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))
                 && WARNED_INDEX_PATHS.add(indexPath)) {
             log.warn(

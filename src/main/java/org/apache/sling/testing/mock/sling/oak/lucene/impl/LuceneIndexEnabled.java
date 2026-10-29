@@ -22,4 +22,4 @@ package org.apache.sling.testing.mock.sling.oak.lucene.impl;
  * Marker service registered by the {@code OakLuceneContextPlugins.OAK_LUCENE} context plugin before the repository is created.
  * If present in the bundle context, Lucene index support is enabled for the repository.
  */
-public final class LuceneIndexEnabled {}
+public interface LuceneIndexEnabled {}

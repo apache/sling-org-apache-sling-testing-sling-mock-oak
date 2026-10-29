@@ -30,7 +30,6 @@ import org.apache.jackrabbit.oak.plugins.index.IndexEditorProvider;
 import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexConstants;
 import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexEditorProvider;
 import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexProvider;
-import org.apache.jackrabbit.oak.spi.commit.CommitHook;
 import org.apache.jackrabbit.oak.spi.commit.DefaultEditor;
 import org.apache.jackrabbit.oak.spi.commit.Observer;
 import org.apache.jackrabbit.oak.spi.query.QueryIndexProvider;
@@ -114,8 +113,7 @@ public final class LuceneIndexSupport {
         List<IndexEditorProvider> asyncIndexEditorProviders = new ArrayList<>();
         new Oak.OakDefaultComponents().indexEditorProviders().forEach(asyncIndexEditorProviders::add);
         asyncIndexEditorProviders.add(indexEditorProvider);
-        jcr.with((CommitHook)
-                new SynchronousAsyncIndexHook(CompositeIndexEditorProvider.compose(asyncIndexEditorProviders)));
+        jcr.with(new SynchronousAsyncIndexHook(CompositeIndexEditorProvider.compose(asyncIndexEditorProviders)));
 
         return indexProvider;
     }

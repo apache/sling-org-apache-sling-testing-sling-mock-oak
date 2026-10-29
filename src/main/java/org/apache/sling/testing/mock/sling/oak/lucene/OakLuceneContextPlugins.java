@@ -48,7 +48,7 @@ public final class OakLuceneContextPlugins {
                 @Override
                 public void beforeSetUp(@NotNull OsgiContextImpl context) {
                     // registered before the repository is created and activated
-                    context.registerService(LuceneIndexEnabled.class, new LuceneIndexEnabled());
+                    context.registerService(LuceneIndexEnabled.class, new LuceneIndexEnabled() {});
                 }
             };
 }
