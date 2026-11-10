@@ -35,8 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Logs a warning if a Lucene index definition is added to or changed in /oak:index while Lucene index support is
- * not enabled - queries would not use this index, and full-text queries would return no results.
+ * Logs a warning if a Lucene index definition is added to or changed in an oak:index node (at any path) while
+ * Lucene index support is not enabled - queries would not use this index, and full-text queries would return no results.
  * The warning is logged only once per index path.
  * <p>
  * Uses only Oak core classes, so it can be used without oak-lucene in the class path.
@@ -66,42 +66,69 @@ public final class LuceneIndexMissingWarning implements EditorProvider {
             @NotNull NodeState after,
             @NotNull NodeBuilder builder,
             @NotNull CommitInfo info) {
-        return new DefaultEditor() {
-            @Override
-            public @Nullable Editor childNodeAdded(@NotNull String name, @NotNull NodeState after) {
-                return getIndexDefinitionsEditor(name);
-            }
-
-            @Override
-            public @Nullable Editor childNodeChanged(
-                    @NotNull String name, @NotNull NodeState before, @NotNull NodeState after) {
-                return getIndexDefinitionsEditor(name);
-            }
-        };
+        return new ContentEditor(PathUtils.ROOT_PATH);
     }
 
-    private @Nullable Editor getIndexDefinitionsEditor(@NotNull String name) {
-        if (!IndexConstants.INDEX_DEFINITIONS_NAME.equals(name)) {
+    /**
+     * Visits all changed content nodes to find index definitions in <code>oak:index</code> nodes at any path.
+     */
+    private final class ContentEditor extends DefaultEditor {
+
+        private final String path;
+
+        ContentEditor(@NotNull String path) {
+            this.path = path;
+        }
+
+        @Override
+        public @Nullable Editor childNodeAdded(@NotNull String name, @NotNull NodeState after) {
+            return getChildEditor(name);
+        }
+
+        @Override
+        public @Nullable Editor childNodeChanged(
+                @NotNull String name, @NotNull NodeState before, @NotNull NodeState after) {
+            return getChildEditor(name);
+        }
+
+        private @Nullable Editor getChildEditor(@NotNull String name) {
+            if (IndexConstants.INDEX_DEFINITIONS_NAME.equals(name)) {
+                return new IndexDefinitionsEditor(PathUtils.concat(path, name));
+            }
+            if (name.startsWith(":")) {
+                // hidden nodes (e.g. index data) do not contain index definitions
+                return null;
+            }
+            return new ContentEditor(PathUtils.concat(path, name));
+        }
+    }
+
+    /**
+     * Checks the index definitions in an <code>oak:index</code> node.
+     */
+    private final class IndexDefinitionsEditor extends DefaultEditor {
+
+        private final String path;
+
+        IndexDefinitionsEditor(@NotNull String path) {
+            this.path = path;
+        }
+
+        @Override
+        public @Nullable Editor childNodeAdded(@NotNull String name, @NotNull NodeState after) {
+            checkIndexDefinition(PathUtils.concat(path, name), after);
             return null;
         }
-        return new DefaultEditor() {
-            @Override
-            public @Nullable Editor childNodeAdded(@NotNull String name, @NotNull NodeState after) {
-                checkIndexDefinition(name, after);
-                return null;
-            }
 
-            @Override
-            public @Nullable Editor childNodeChanged(
-                    @NotNull String name, @NotNull NodeState before, @NotNull NodeState after) {
-                checkIndexDefinition(name, after);
-                return null;
-            }
-        };
+        @Override
+        public @Nullable Editor childNodeChanged(
+                @NotNull String name, @NotNull NodeState before, @NotNull NodeState after) {
+            checkIndexDefinition(PathUtils.concat(path, name), after);
+            return null;
+        }
     }
 
-    private void checkIndexDefinition(@NotNull String name, @NotNull NodeState definition) {
-        String indexPath = PathUtils.concat(PathUtils.ROOT_PATH, IndexConstants.INDEX_DEFINITIONS_NAME, name);
+    private void checkIndexDefinition(@NotNull String indexPath, @NotNull NodeState definition) {
         if (TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))
                 && WARNED_INDEX_PATHS.add(indexPath)) {
             log.warn(

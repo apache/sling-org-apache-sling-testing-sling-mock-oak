@@ -92,6 +92,20 @@ public class LuceneIndexMissingWarningTest {
         assertEquals(stdErr.getOutput(), 0, stdErr.count("Lucene index definition"));
     }
 
+    @Test
+    public void testNestedLuceneIndexAdded() throws CommitFailedException {
+        NodeBuilder after = EMPTY_NODE.builder();
+        NodeBuilder site = after.child("content").child("site");
+        site.child("oak:index").child(PREFIX + "Nested").setProperty("type", "lucene");
+        // hidden nodes are not inspected
+        site.child(":hidden").child("oak:index").child(PREFIX + "Hidden").setProperty("type", "lucene");
+
+        commit(EMPTY_NODE, after.getNodeState());
+
+        assertWarnings("/content/site/oak:index/" + PREFIX + "Nested", 1);
+        assertEquals(stdErr.getOutput(), 0, stdErr.count(PREFIX + "Hidden"));
+    }
+
     private void commit(NodeState before, NodeState after) throws CommitFailedException {
         hook.processCommit(before, after, CommitInfo.EMPTY);
     }
@@ -107,7 +121,7 @@ public class LuceneIndexMissingWarningTest {
         assertEquals(
                 stdErr.getOutput(),
                 expected,
-                stdErr.count("Lucene index definition /oak:index/" + indexName
+                stdErr.count("Lucene index definition " + (indexName.startsWith("/") ? "" : "/oak:index/") + indexName
                         + " found, but Lucene index support is not enabled: queries will not use this index, "
                         + "and full-text queries return no results. " + REASON));
     }
