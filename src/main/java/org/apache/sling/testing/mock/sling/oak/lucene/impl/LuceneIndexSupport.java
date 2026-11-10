@@ -18,9 +18,9 @@
  */
 package org.apache.sling.testing.mock.sling.oak.lucene.impl;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
@@ -35,13 +35,16 @@ import org.apache.jackrabbit.oak.spi.commit.Observer;
 import org.apache.jackrabbit.oak.spi.query.QueryIndexProvider;
 import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Registers Oak Lucene index support. Enabled per context via {@code OakLuceneContextPlugins.OAK_LUCENE}, and requires the
- * optional oak-lucene dependency in the class path.
+ * Registers Oak Lucene index support. Enabled automatically if a compatible oak-lucene artifact is present in the
+ * class path (optional dependency).
  * <p>
- * Lucene classes are only referenced from this class, so callers must call {@link #validate(String)}
- * before calling {@link #register(Jcr)} to get a meaningful error instead of a {@link NoClassDefFoundError}.
+ * Lucene classes are only referenced from this class, so callers must check {@link #getUnavailableReason(String)}
+ * before calling {@link #register(Jcr)} to avoid a {@link NoClassDefFoundError}.
  * </p>
  * <p>
  * No async indexing is running in the mock repository: index definitions with <code>async</code> property are
@@ -54,55 +57,73 @@ public final class LuceneIndexSupport {
             "org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexProvider";
     private static final String OAK_LUCENE_IMPLEMENTATION_TITLE = "Oak Lucene";
 
+    private static final AtomicBoolean TOO_OLD_WARNING_LOGGED = new AtomicBoolean();
+
+    private static final Logger log = LoggerFactory.getLogger(LuceneIndexSupport.class);
+
     private LuceneIndexSupport() {
         // static methods only
     }
 
     /**
-     * Checks that a compatible oak-lucene artifact is present in the class path.
+     * Checks whether a compatible oak-lucene artifact is present in the class path.
      * <p>
      * Lucene classes may also be provided by other artifacts like the AEM API JARs (uber-jar, aem-sdk-api), which do
      * not contain a complete and compatible oak-lucene implementation. So the Lucene classes have to be loaded from
      * the oak-lucene artifact itself.
      * </p>
      * @param expectedOakVersion Oak version this artifact is built for
-     * @throws IllegalStateException if no compatible oak-lucene artifact is found
+     * @return null if a compatible oak-lucene artifact is found, otherwise the reason why Lucene index support
+     *         is not available
      */
-    public static void validate(@NotNull String expectedOakVersion) {
+    public static @Nullable String getUnavailableReason(@NotNull String expectedOakVersion) {
+        return getUnavailableReason(expectedOakVersion, LUCENE_INDEX_PROVIDER_CLASS);
+    }
+
+    static @Nullable String getUnavailableReason(@NotNull String expectedOakVersion, @NotNull String className) {
         Class<?> luceneIndexProviderClass;
         try {
-            luceneIndexProviderClass =
-                    Class.forName(LUCENE_INDEX_PROVIDER_CLASS, false, LuceneIndexSupport.class.getClassLoader());
+            luceneIndexProviderClass = Class.forName(className, false, LuceneIndexSupport.class.getClassLoader());
         } catch (ClassNotFoundException | LinkageError ex) {
-            throw new IllegalStateException(
-                    "Lucene index support requires oak-lucene in the class path. Add a test dependency to "
-                            + "org.apache.jackrabbit:oak-lucene:" + expectedOakVersion + ".",
-                    ex);
+            return "oak-lucene is not in the class path. To enable it, add a test dependency to "
+                    + "org.apache.jackrabbit:oak-lucene:" + expectedOakVersion + ".";
         }
-
         // check that the class is provided by oak-lucene, and not by another artifact embedding it
         Package pkg = luceneIndexProviderClass.getPackage();
-        String title = pkg != null ? pkg.getImplementationTitle() : null;
-        String version = pkg != null ? pkg.getImplementationVersion() : null;
-        if (!OAK_LUCENE_IMPLEMENTATION_TITLE.equals(title) || version == null) {
-            throw new IllegalStateException("Lucene index support requires oak-lucene in the class path, but "
-                    + LUCENE_INDEX_PROVIDER_CLASS + " is loaded from another artifact (" + title + " " + version
-                    + "). Add a test dependency to org.apache.jackrabbit:oak-lucene:" + expectedOakVersion
+        return getUnavailableReason(
+                expectedOakVersion, className, pkg.getImplementationTitle(), pkg.getImplementationVersion());
+    }
+
+    static @Nullable String getUnavailableReason(
+            @NotNull String expectedOakVersion,
+            @NotNull String className,
+            @Nullable String implementationTitle,
+            @Nullable String implementationVersion) {
+        if (!OAK_LUCENE_IMPLEMENTATION_TITLE.equals(implementationTitle) || implementationVersion == null) {
+            return className + " is loaded from another artifact (" + implementationTitle + " "
+                    + implementationVersion + ") instead of oak-lucene. To enable it, add a test dependency to "
+                    + "org.apache.jackrabbit:oak-lucene:" + expectedOakVersion
                     + " and place it before other dependencies containing Oak Lucene classes, "
-                    + "e.g. the AEM API JARs.");
+                    + "e.g. the AEM API JARs.";
         }
-        if (new ComparableVersion(expectedOakVersion).compareTo(new ComparableVersion(version)) > 0) {
-            throw new IllegalStateException(
-                    "Unexpected (too old) oak-lucene version " + version + ", expected " + expectedOakVersion + ".");
+        if (new ComparableVersion(expectedOakVersion).compareTo(new ComparableVersion(implementationVersion)) > 0) {
+            String reason = "oak-lucene version " + implementationVersion + " is older than the expected version "
+                    + expectedOakVersion + ".";
+            // oak-lucene was added deliberately, so tell about the mismatch also without Lucene index definitions
+            if (TOO_OLD_WARNING_LOGGED.compareAndSet(false, true)) {
+                log.warn("Lucene index support is not enabled: {}", reason);
+            }
+            return reason;
         }
+        return null;
     }
 
     /**
      * Registers Lucene query index provider and index editor provider, and updates async indexes synchronously.
      * @param jcr JCR repository builder
-     * @return Lucene index provider which has to be closed when the repository is shut down
+     * @return Action which closes the Lucene index provider, has to be called when the repository is shut down
      */
-    public static @NotNull Closeable register(@NotNull Jcr jcr) {
+    public static @NotNull Runnable register(@NotNull Jcr jcr) {
         LuceneIndexProvider indexProvider = new LuceneIndexProvider();
         LuceneIndexEditorProvider indexEditorProvider = new LuceneIndexEditorProvider();
         jcr.with((QueryIndexProvider) indexProvider)
@@ -115,7 +136,7 @@ public final class LuceneIndexSupport {
         asyncIndexEditorProviders.add(indexEditorProvider);
         jcr.with(new SynchronousAsyncIndexHook(CompositeIndexEditorProvider.compose(asyncIndexEditorProviders)));
 
-        return indexProvider;
+        return indexProvider::close;
     }
 
     /**

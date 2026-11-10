@@ -28,7 +28,6 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.Value;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +46,6 @@ import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
-import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexEnabled;
 import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexMissingWarning;
 import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexSupport;
 import org.osgi.framework.BundleContext;
@@ -67,7 +65,7 @@ public final class OakMockSlingRepository implements SlingRepository {
     private Repository repository;
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
-    private Closeable luceneIndexProvider;
+    private Runnable luceneIndexProviderCloser;
 
     private final NodeStore nodeStore;
     private final boolean fromScratch;
@@ -99,13 +97,13 @@ public final class OakMockSlingRepository implements SlingRepository {
         if (fromScratch) {
             jcr.with(new ExtraSlingContent());
         }
-        // optional Lucene index support, enabled via OakLuceneContextPlugins.OAK_LUCENE
+        // optional Lucene index support, enabled if a compatible oak-lucene artifact is in the class path
         String expectedVersion = getExpectedVersion();
-        if (bundleContext.getServiceReference(LuceneIndexEnabled.class) != null) {
-            LuceneIndexSupport.validate(expectedVersion);
-            luceneIndexProvider = LuceneIndexSupport.register(jcr);
+        String luceneUnavailableReason = LuceneIndexSupport.getUnavailableReason(expectedVersion);
+        if (luceneUnavailableReason == null) {
+            luceneIndexProviderCloser = LuceneIndexSupport.register(jcr);
         } else {
-            jcr.with(new LuceneIndexMissingWarning(expectedVersion));
+            jcr.with(new LuceneIndexMissingWarning(luceneUnavailableReason));
         }
 
         this.repository = jcr.createRepository();
@@ -139,12 +137,8 @@ public final class OakMockSlingRepository implements SlingRepository {
         // shutdown OAK JCR repository
         ((JackrabbitRepository) repository).shutdown();
 
-        if (luceneIndexProvider != null) {
-            try {
-                luceneIndexProvider.close();
-            } catch (IOException ex) {
-                log.warn("Unable to close Lucene index provider", ex);
-            }
+        if (luceneIndexProviderCloser != null) {
+            luceneIndexProviderCloser.run();
         }
     }
 

@@ -34,7 +34,6 @@ import java.util.Set;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.apache.sling.testing.mock.sling.junit.SlingContextBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests Lucene index support enabled via {@link OakLuceneContextPlugins#OAK_LUCENE}.
+ * Tests Lucene index support, enabled automatically as oak-lucene is in the test class path.
  * Async indexes are expected to be updated synchronously within each commit.
  */
 @RunWith(Parameterized.class)
@@ -76,9 +75,7 @@ public class LuceneIndexTest {
     public String[] async;
 
     @Rule
-    public SlingContext context = new SlingContextBuilder(ResourceResolverType.JCR_OAK)
-            .plugin(OakLuceneContextPlugins.OAK_LUCENE)
-            .build();
+    public SlingContext context = new SlingContext(ResourceResolverType.JCR_OAK);
 
     private Session session;
 

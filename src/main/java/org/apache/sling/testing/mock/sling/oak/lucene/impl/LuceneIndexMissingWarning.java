@@ -29,7 +29,6 @@ import org.apache.jackrabbit.oak.spi.commit.Editor;
 import org.apache.jackrabbit.oak.spi.commit.EditorProvider;
 import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
 import org.apache.jackrabbit.oak.spi.state.NodeState;
-import org.apache.sling.testing.mock.sling.oak.lucene.OakLuceneContextPlugins;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -52,13 +51,13 @@ public final class LuceneIndexMissingWarning implements EditorProvider {
 
     private static final Logger log = LoggerFactory.getLogger(LuceneIndexMissingWarning.class);
 
-    private final String expectedOakVersion;
+    private final String unavailableReason;
 
     /**
-     * @param expectedOakVersion Oak version this artifact is built for
+     * @param unavailableReason Reason why Lucene index support is not available, including a hint how to enable it
      */
-    public LuceneIndexMissingWarning(@NotNull String expectedOakVersion) {
-        this.expectedOakVersion = expectedOakVersion;
+    public LuceneIndexMissingWarning(@NotNull String unavailableReason) {
+        this.unavailableReason = unavailableReason;
     }
 
     @Override
@@ -107,12 +106,9 @@ public final class LuceneIndexMissingWarning implements EditorProvider {
                 && WARNED_INDEX_PATHS.add(indexPath)) {
             log.warn(
                     "Lucene index definition {} found, but Lucene index support is not enabled: queries will not "
-                            + "use this index, and full-text queries return no results. To enable it, add a test "
-                            + "dependency to org.apache.jackrabbit:oak-lucene:{} and register the context plugin "
-                            + "{}.OAK_LUCENE.",
+                            + "use this index, and full-text queries return no results. {}",
                     indexPath,
-                    expectedOakVersion,
-                    OakLuceneContextPlugins.class.getName());
+                    unavailableReason);
         }
     }
 }
