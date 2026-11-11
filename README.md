@@ -16,5 +16,24 @@ In order to execute tests with a version **newer than the Oak version** shaded i
 
 Downgrading to an **older Oak version** is not supported and will lead to an exception (if some earlier artifacts in the class path provide an old Oak implementation).
 
+## Lucene index support (optional)
+
+By default only property indexes are available, so full-text queries (`jcr:contains`) return no results, and queries relying on Lucene index definitions are not served by an index. Lucene index support is enabled automatically if `oak-lucene` is in the test class path. Use the same Oak version that is shaded into this artifact (the second part of its version, e.g. `1.86.0` for `4.1.0-1.86.0`):
+
+```xml
+<dependency>
+    <groupId>org.apache.jackrabbit</groupId>
+    <artifactId>oak-lucene</artifactId>
+    <version>1.86.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+This applies to all `JCR_OAK` contexts in the module. Note that this also applies if `oak-lucene` is already in the test class path as a transitive dependency.
+
+Lucene index support stays disabled if `oak-lucene` is missing or older than the shaded Oak version. A warning is logged if a Lucene index definition is found while Lucene index support is not enabled, naming the reason. Some artifacts also contain (parts of) the Oak Lucene classes, e.g. the AEM API JARs (`uber-jar`, `aem-sdk-api`). These are not sufficient, so make sure to place the `oak-lucene` dependency before such artifacts in the test class path.
+
+Lucene index definitions are created as usual below `/oak:index`, or in an `oak:index` node at a non-root path to index only the content below that path (e.g. in the test setup or via the content loader). Index definitions from a real instance can be used unchanged. No background async indexing is running in the mock repository: **async indexes are updated synchronously** within each commit instead. This applies to all async lanes referenced by index definitions (e.g. `async=["async"]`, `async=["fulltext-async"]`, or hybrid indexes like `async=["async", "nrt"]` and `async=["async", "sync"]`). So content is searchable as soon as the session is saved, and tests don't need to wait for indexing. The index data is kept in the in-memory repository, no files are written.
+
 Documentation:
 <https://sling.apache.org/documentation/development/sling-mock.html>

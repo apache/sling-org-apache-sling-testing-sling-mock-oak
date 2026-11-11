@@ -125,6 +125,15 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Optional Lucene index support: users have to add oak-lucene to their own test class path to enable it -->
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>oak-lucene</artifactId>
+            <version>${oak.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- those two compile dependencies are requires to avoid "Dependency-reduced POM written" endless loop in maven-shade-plugin -->
         <dependency>
             <groupId>javax.jcr</groupId>
@@ -189,6 +198,36 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/LuceneIndexNotAvailableTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <!-- verify behavior without the optional oak-lucene dependency -->
+                    <execution>
+                        <id>test-without-oak-lucene</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/LuceneIndexNotAvailableTest.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.apache.jackrabbit:oak-lucene</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
                     <!--
@@ -202,6 +241,12 @@
                         <includes>
                             <include>org.apache.jackrabbit:*</include>
                         </includes>
+                        <!-- optional Lucene index support is not embedded, see README -->
+                        <excludes>
+                            <exclude>org.apache.jackrabbit:oak-lucene</exclude>
+                            <exclude>org.apache.jackrabbit:oak-search</exclude>
+                            <exclude>org.apache.jackrabbit:oak-store-document</exclude>
+                        </excludes>
                     </artifactSet>
                     <createSourcesJar>true</createSourcesJar>
                 </configuration>

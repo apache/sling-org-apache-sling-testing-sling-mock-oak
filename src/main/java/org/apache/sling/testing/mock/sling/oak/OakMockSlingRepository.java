@@ -46,6 +46,8 @@ import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.testing.mock.sling.oak.impl.ComparableVersion;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexMissingWarning;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexSupport;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -63,6 +65,7 @@ public final class OakMockSlingRepository implements SlingRepository {
     private Repository repository;
     private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
+    private Runnable luceneIndexProviderCloser;
 
     private final NodeStore nodeStore;
     private final boolean fromScratch;
@@ -94,11 +97,18 @@ public final class OakMockSlingRepository implements SlingRepository {
         if (fromScratch) {
             jcr.with(new ExtraSlingContent());
         }
+        // optional Lucene index support, enabled if a compatible oak-lucene artifact is in the class path
+        String expectedVersion = getExpectedVersion();
+        String luceneUnavailableReason = LuceneIndexSupport.getUnavailableReason(expectedVersion);
+        if (luceneUnavailableReason == null) {
+            luceneIndexProviderCloser = LuceneIndexSupport.register(jcr);
+        } else {
+            jcr.with(new LuceneIndexMissingWarning(luceneUnavailableReason));
+        }
 
         this.repository = jcr.createRepository();
         // check if the right Oak version is loaded (older versions may be loaded in case of non-deliberate class loader
         // collisions)
-        String expectedVersion = getExpectedVersion();
         String actualVersion = repository.getDescriptor(REP_VERSION_DESC);
         if (new ComparableVersion(expectedVersion).compareTo(new ComparableVersion(actualVersion)) > 0) {
             throw new IllegalStateException(
@@ -126,6 +136,10 @@ public final class OakMockSlingRepository implements SlingRepository {
 
         // shutdown OAK JCR repository
         ((JackrabbitRepository) repository).shutdown();
+
+        if (luceneIndexProviderCloser != null) {
+            luceneIndexProviderCloser.run();
+        }
     }
 
     private void shutdownExecutorService(Object instance, String fieldName) {
