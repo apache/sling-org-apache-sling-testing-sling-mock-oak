@@ -126,16 +126,16 @@ public final class LuceneIndexMissingWarning implements EditorProvider {
             checkIndexDefinition(PathUtils.concat(path, name), after);
             return null;
         }
-    }
 
-    private void checkIndexDefinition(@NotNull String indexPath, @NotNull NodeState definition) {
-        if (TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))
-                && WARNED_INDEX_PATHS.add(indexPath)) {
-            log.warn(
-                    "Lucene index definition {} found, but Lucene index support is not enabled: queries will not "
-                            + "use this index, and full-text queries return no results. {}",
-                    indexPath,
-                    unavailableReason);
+        private void checkIndexDefinition(@NotNull String indexPath, @NotNull NodeState definition) {
+            if (TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))
+                    && WARNED_INDEX_PATHS.add(indexPath)) {
+                log.warn(
+                        "Lucene index definition {} found, but Lucene index support is not enabled: queries will not "
+                                + "use this index, and full-text queries return no results. {}",
+                        indexPath,
+                        unavailableReason);
+            }
         }
     }
 }
