@@ -26,6 +26,7 @@ import javax.jcr.query.Query;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.apache.sling.testing.mock.sling.oak.lucene.impl.LuceneIndexSupport;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.junit.rules.RuleChain;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -97,5 +99,13 @@ public class LuceneIndexNotAvailableTest {
                 .getValue("plan")
                 .getString();
         assertFalse("Unexpected query plan: " + plan, plan.contains("lucene:"));
+    }
+
+    @Test
+    public void testUnavailableReasonCached() {
+        String reason = LuceneIndexSupport.getUnavailableReason("1.86.0");
+        assertTrue(reason, reason.startsWith("oak-lucene is not in the class path."));
+        // the check is done only once, the same result is returned for further calls
+        assertSame(reason, LuceneIndexSupport.getUnavailableReason("1.86.0"));
     }
 }

@@ -20,6 +20,9 @@ package org.apache.sling.testing.mock.sling.oak.lucene.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.jackrabbit.oak.Oak;
@@ -59,6 +62,9 @@ public final class LuceneIndexSupport {
 
     private static final AtomicBoolean TOO_OLD_WARNING_LOGGED = new AtomicBoolean();
 
+    // the class path does not change at runtime, so the check is done only once (per expected Oak version)
+    private static final Map<String, Optional<String>> UNAVAILABLE_REASONS = new ConcurrentHashMap<>();
+
     private static final Logger log = LoggerFactory.getLogger(LuceneIndexSupport.class);
 
     private LuceneIndexSupport() {
@@ -72,12 +78,19 @@ public final class LuceneIndexSupport {
      * not contain a complete and compatible oak-lucene implementation. So the Lucene classes have to be loaded from
      * the oak-lucene artifact itself.
      * </p>
+     * <p>
+     * The result is cached, as the class path does not change at runtime.
+     * </p>
      * @param expectedOakVersion Oak version this artifact is built for
      * @return null if a compatible oak-lucene artifact is found, otherwise the reason why Lucene index support
      *         is not available
      */
     public static @Nullable String getUnavailableReason(@NotNull String expectedOakVersion) {
-        return getUnavailableReason(expectedOakVersion, LUCENE_INDEX_PROVIDER_CLASS);
+        return UNAVAILABLE_REASONS
+                .computeIfAbsent(
+                        expectedOakVersion,
+                        version -> Optional.ofNullable(getUnavailableReason(version, LUCENE_INDEX_PROVIDER_CLASS)))
+                .orElse(null);
     }
 
     static @Nullable String getUnavailableReason(@NotNull String expectedOakVersion, @NotNull String className) {
