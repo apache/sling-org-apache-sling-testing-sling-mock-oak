@@ -92,23 +92,29 @@ public final class SynchronousAsyncIndexHook implements CommitHook {
         return asyncLanes;
     }
 
+    /**
+     * Collects the async lane names of a single index definition, if it is a Lucene index definition.
+     */
+    private static void addAsyncLanesOfDefinition(@NotNull NodeState definition, @NotNull Set<String> asyncLanes) {
+        if (!LuceneIndexConstants.TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))) {
+            return;
+        }
+        PropertyState async = definition.getProperty(IndexConstants.ASYNC_PROPERTY_NAME);
+        if (async == null) {
+            return;
+        }
+        for (String value : async.getValue(Type.STRINGS)) {
+            if (!IndexConstants.INDEXING_MODE_NRT.equals(value) && !IndexConstants.INDEXING_MODE_SYNC.equals(value)) {
+                asyncLanes.add(value);
+            }
+        }
+    }
+
     private static void collectAsyncLanes(
             @NotNull NodeState before, @NotNull NodeState after, @NotNull Set<String> asyncLanes) {
         for (ChildNodeEntry entry :
                 after.getChildNode(IndexConstants.INDEX_DEFINITIONS_NAME).getChildNodeEntries()) {
-            NodeState definition = entry.getNodeState();
-            if (!LuceneIndexConstants.TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))) {
-                continue;
-            }
-            PropertyState async = definition.getProperty(IndexConstants.ASYNC_PROPERTY_NAME);
-            if (async != null) {
-                for (String value : async.getValue(Type.STRINGS)) {
-                    if (!IndexConstants.INDEXING_MODE_NRT.equals(value)
-                            && !IndexConstants.INDEXING_MODE_SYNC.equals(value)) {
-                        asyncLanes.add(value);
-                    }
-                }
-            }
+            addAsyncLanesOfDefinition(entry.getNodeState(), asyncLanes);
         }
         after.compareAgainstBaseState(before, new DefaultNodeStateDiff() {
             @Override
