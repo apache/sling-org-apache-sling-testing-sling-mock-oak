@@ -27,6 +27,7 @@ import org.apache.jackrabbit.oak.api.Type;
 import org.apache.jackrabbit.oak.plugins.index.IndexConstants;
 import org.apache.jackrabbit.oak.plugins.index.IndexEditorProvider;
 import org.apache.jackrabbit.oak.plugins.index.IndexUpdateProvider;
+import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexConstants;
 import org.apache.jackrabbit.oak.spi.commit.CommitHook;
 import org.apache.jackrabbit.oak.spi.commit.CommitInfo;
 import org.apache.jackrabbit.oak.spi.commit.EditorHook;
@@ -41,10 +42,15 @@ import static org.apache.jackrabbit.oak.plugins.memory.EmptyNodeState.EMPTY_NODE
  * Updates asynchronous indexes synchronously as part of each commit.
  * <p>
  * No async indexing is running in the mock repository. Instead, for each async indexing lane
- * (e.g. <code>async</code> or <code>fulltext-async</code>) referenced by an index definition that may be affected by
- * the commit, an index update for this lane is executed within the commit. This way index definitions
+ * (e.g. <code>async</code> or <code>fulltext-async</code>) referenced by a Lucene index definition that may be affected
+ * by the commit, an index update for this lane is executed within the commit. This way index definitions
  * with <code>async</code> property (including hybrid indexes like <code>async=["async", "nrt"]</code>)
  * can be used unchanged, and content is searchable as soon as it is saved.
+ * </p>
+ * <p>
+ * Only Lucene index definitions are taken into account: Oak's default content contains async index definitions of
+ * other types (e.g. <code>/oak:index/counter</code>), which would otherwise trigger an additional index update for
+ * each commit, even if no Lucene index is defined.
  * </p>
  * <p>
  * Index definitions are supported in <code>/oak:index</code> and in <code>oak:index</code> nodes at non-root paths
@@ -75,7 +81,7 @@ public final class SynchronousAsyncIndexHook implements CommitHook {
     }
 
     /**
-     * Collects the async lane names of all index definitions that may be affected by the changes: the index
+     * Collects the async lane names of all Lucene index definitions that may be affected by the changes: the index
      * definitions in the <code>oak:index</code> nodes of all changed nodes, including the root node. As changes
      * are reported for all ancestors of a changed node, this covers all index definitions containing changed
      * content, and new index definitions.
@@ -90,7 +96,11 @@ public final class SynchronousAsyncIndexHook implements CommitHook {
             @NotNull NodeState before, @NotNull NodeState after, @NotNull Set<String> asyncLanes) {
         for (ChildNodeEntry entry :
                 after.getChildNode(IndexConstants.INDEX_DEFINITIONS_NAME).getChildNodeEntries()) {
-            PropertyState async = entry.getNodeState().getProperty(IndexConstants.ASYNC_PROPERTY_NAME);
+            NodeState definition = entry.getNodeState();
+            if (!LuceneIndexConstants.TYPE_LUCENE.equals(definition.getString(IndexConstants.TYPE_PROPERTY_NAME))) {
+                continue;
+            }
+            PropertyState async = definition.getProperty(IndexConstants.ASYNC_PROPERTY_NAME);
             if (async != null) {
                 for (String value : async.getValue(Type.STRINGS)) {
                     if (!IndexConstants.INDEXING_MODE_NRT.equals(value)

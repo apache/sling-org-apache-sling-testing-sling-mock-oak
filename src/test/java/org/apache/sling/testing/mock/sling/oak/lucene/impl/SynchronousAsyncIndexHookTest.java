@@ -43,6 +43,8 @@ public class SynchronousAsyncIndexHookTest {
         addIndex(builder.child("content").child("unchanged"), "unchanged", "unchanged-lane");
         // index definitions in hidden nodes are not collected
         addIndex(builder.child(":hidden"), "hidden", "hidden-lane");
+        // async index definitions of other types are not collected
+        addIndexOfType(builder, "counter", "counter", "other-lane");
 
         // initial content: all index definitions outside hidden nodes
         assertEquals(
@@ -60,7 +62,26 @@ public class SynchronousAsyncIndexHookTest {
                 SynchronousAsyncIndexHook.getAsyncLanes(before, changed.getNodeState()));
     }
 
+    @Test
+    public void testNoAsyncLanesWithoutLuceneIndex() throws CommitFailedException {
+        MemoryNodeStore store = new MemoryNodeStore();
+        NodeBuilder builder = store.getRoot().builder();
+        // like the node counter index of Oak's default content
+        addIndexOfType(builder, "counter", "counter", "async");
+        NodeState before = store.merge(builder, EmptyHook.INSTANCE, CommitInfo.EMPTY);
+
+        NodeBuilder changed = before.builder();
+        changed.child("content").setProperty("text", "value");
+        assertEquals(Set.of(), SynchronousAsyncIndexHook.getAsyncLanes(before, changed.getNodeState()));
+    }
+
     private static void addIndex(NodeBuilder parent, String name, String... async) {
-        parent.child("oak:index").child(name).setProperty("async", Set.of(async), Type.STRINGS);
+        addIndexOfType(parent, name, "lucene", async);
+    }
+
+    private static void addIndexOfType(NodeBuilder parent, String name, String type, String... async) {
+        NodeBuilder definition = parent.child("oak:index").child(name);
+        definition.setProperty("type", type);
+        definition.setProperty("async", Set.of(async), Type.STRINGS);
     }
 }
